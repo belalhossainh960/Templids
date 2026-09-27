@@ -1,0 +1,758 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TempMail Pro - Disposable Temporary Email</title>
+  <meta name="description" content="Instant, secure, disposable email address generator with real-time inbox, auto-refresh, smart OTP detection, and dark mode.">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Plus Jakarta Sans', 'system-ui', 'sans-serif'],
+            mono: ['JetBrains Mono', 'ui-monospace', 'monospace'],
+          },
+        },
+      },
+    };
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+  <style>
+    body { font-family: 'Plus Jakarta Sans', system-ui, sans-serif; }
+    .font-mono { font-family: 'JetBrains Mono', ui-monospace, monospace; }
+  </style>
+</head>
+<body class="h-full bg-slate-50 text-slate-900 antialiased dark:bg-slate-950 dark:text-slate-100 transition-colors flex flex-col">
+
+  <!-- Header -->
+  <header class="sticky top-0 z-40 w-full border-b border-slate-200/80 bg-white/90 backdrop-blur-md dark:border-slate-800/80 dark:bg-slate-900/90 transition-colors">
+    <div class="mx-auto flex h-16 max-w-6xl items-center justify-between px-4 sm:px-6 lg:px-8">
+      <div class="flex items-center gap-2.5">
+        <div class="flex h-9 w-9 items-center justify-center rounded-xl bg-blue-600 text-white shadow-sm shadow-blue-500/30">
+          <i class="ti ti-mail text-lg"></i>
+        </div>
+        <div class="flex items-baseline gap-1">
+          <span class="text-xl font-bold tracking-tight text-slate-900 dark:text-white">TempMail</span>
+          <span class="h-1.5 w-1.5 rounded-full bg-blue-600 dark:bg-blue-400"></span>
+        </div>
+      </div>
+
+      <nav class="flex items-center gap-1 sm:gap-2">
+        <button onclick="scrollToInbox()" class="px-3 py-1.5 text-sm font-medium rounded-lg text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white transition-colors">
+          Inbox
+        </button>
+        <button onclick="openHistoryModal()" class="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-lg text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white transition-colors">
+          <i class="ti ti-history"></i>
+          <span class="hidden sm:inline">History</span>
+          <span id="historyBadge" class="hidden rounded-full bg-slate-200 px-1.5 py-0.2 text-xs font-semibold text-slate-700 dark:bg-slate-700 dark:text-slate-300">0</span>
+        </button>
+        <button onclick="openSettingsModal()" class="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-lg text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white transition-colors">
+          <i class="ti ti-help"></i>
+          <span class="hidden sm:inline">FAQ & Settings</span>
+        </button>
+      </nav>
+
+      <div class="flex items-center gap-2">
+        <button onclick="toggleDarkMode()" aria-label="Toggle theme" class="flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:border-slate-800 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-white transition-colors">
+          <i id="themeIcon" class="ti ti-moon text-lg"></i>
+        </button>
+        <button onclick="generateEmail()" class="flex items-center gap-1.5 rounded-lg bg-blue-600 px-3.5 py-2 text-xs font-semibold text-white shadow-sm hover:bg-blue-700 active:scale-95 transition-all">
+          <i class="ti ti-plus"></i>
+          <span class="hidden sm:inline">New Address</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="flex-1 w-full max-w-6xl mx-auto flex flex-col">
+    <!-- Hero Section -->
+    <div class="w-full pt-8 pb-6">
+      <div class="text-center max-w-2xl mx-auto mb-6 px-4">
+        <div class="flex items-center justify-center gap-2 text-xs font-semibold text-blue-600 dark:text-blue-400 mb-2">
+          <i class="ti ti-shield-check"></i>
+          <span>Disposable Temporary Email</span>
+          <span aria-hidden="true" class="text-slate-300 dark:text-slate-600">·</span>
+          <span>Instant & Private</span>
+          <span aria-hidden="true" class="text-slate-300 dark:text-slate-600">·</span>
+          <span>No Signup</span>
+        </div>
+        <h1 class="text-3xl sm:text-4xl font-extrabold tracking-tight text-slate-900 dark:text-white leading-tight">
+          Keep your real inbox clean and secure.
+        </h1>
+        <p class="mt-2 text-sm sm:text-base text-slate-600 dark:text-slate-400 leading-relaxed">
+          Use disposable email addresses for verifications, trials, and registrations.
+          Messages appear in real-time below.
+        </p>
+      </div>
+
+      <!-- Main Mailbox Control Card -->
+      <div class="max-w-2xl mx-auto px-4">
+        <div class="relative rounded-2xl border border-slate-200 bg-white p-4 sm:p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900 transition-all">
+          <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+            <div class="flex-1 min-w-0 bg-slate-50 dark:bg-slate-950/60 border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-3 flex items-center justify-between gap-2">
+              <input id="emailDisplay" readonly value="Generating address..." class="bg-transparent font-mono text-base sm:text-lg font-semibold tracking-tight text-slate-900 dark:text-slate-100 truncate select-all w-full outline-none" />
+              <button onclick="copyAddress()" id="copyBtn" class="shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700 shadow-xs transition-all">
+                <i class="ti ti-copy text-sm"></i>
+                <span id="copyBtnText">Copy</span>
+              </button>
+            </div>
+
+            <div class="flex items-center gap-2 shrink-0">
+              <button onclick="generateEmail()" id="genBtn" class="flex-1 sm:flex-initial flex items-center justify-center gap-1.5 px-4 py-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-medium text-sm transition-all shadow-sm active:scale-95">
+                <i class="ti ti-refresh" id="genSpinner"></i>
+                <span>Change</span>
+              </button>
+              <button onclick="openCustomModal()" title="Customize username" class="flex items-center justify-center p-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700/60 transition-colors">
+                <i class="ti ti-pencil text-base"></i>
+              </button>
+              <button onclick="shareLink()" title="Share mailbox link" class="flex items-center justify-center p-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700/60 transition-colors">
+                <i class="ti ti-share text-base"></i>
+              </button>
+            </div>
+          </div>
+
+          <div class="mt-3.5 pt-3 border-t border-slate-100 dark:border-slate-800/80 flex flex-wrap items-center justify-between text-xs text-slate-500 dark:text-slate-400 gap-2">
+            <div class="relative inline-block text-left">
+              <button onclick="toggleDomainMenu()" class="inline-flex items-center gap-1.5 hover:text-slate-900 dark:hover:text-slate-200 transition-colors py-1 cursor-pointer">
+                <i class="ti ti-world text-blue-500"></i>
+                <span>Domain: <strong id="activeDomainLabel" class="font-mono text-slate-800 dark:text-slate-200">@guerrillamail.com</strong></span>
+                <span class="text-[10px]">▼</span>
+              </button>
+              <div id="domainMenu" class="hidden absolute left-0 bottom-full mb-2 w-64 rounded-xl border border-slate-200 bg-white p-1.5 shadow-lg dark:border-slate-700 dark:bg-slate-800 z-30">
+                <div class="px-2 py-1 text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Select Domain</div>
+                <div id="domainOptions" class="space-y-0.5"></div>
+              </div>
+            </div>
+            <div class="flex items-center gap-3">
+              <span class="flex items-center gap-1.5">
+                <span class="h-2 w-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                <span>Active & Ready</span>
+              </span>
+              <span aria-hidden="true" class="text-slate-300 dark:text-slate-700">·</span>
+              <span>Unlimited Inbound</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Inbox List Section -->
+    <div id="inboxSection" class="w-full max-w-4xl mx-auto px-4 pb-16">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
+        <div class="flex items-center gap-2.5">
+          <h2 class="text-xl font-bold tracking-tight text-slate-900 dark:text-white flex items-center gap-2">
+            <span>Inbox</span>
+            <span id="inboxCount" class="rounded-full bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs px-2.5 py-0.5 font-semibold">0</span>
+          </h2>
+          <span id="checkingIndicator" class="hidden text-xs text-blue-600 dark:text-blue-400 flex items-center gap-1">
+            <i class="ti ti-loader animate-spin"></i> Checking...
+          </span>
+        </div>
+
+        <div class="flex flex-wrap items-center gap-2">
+          <button onclick="toggleAutoRefresh()" id="autoRefreshBtn" class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border text-xs font-medium border-emerald-200 dark:border-emerald-900/60 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 transition-colors">
+            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+            <span id="autoRefreshText">Auto: 10s</span>
+          </button>
+          <button onclick="checkMessages(true)" id="refreshBtn" class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-xs font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
+            <i class="ti ti-refresh" id="refreshIcon"></i>
+            <span>Refresh</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm overflow-hidden min-h-[220px]">
+        <div id="emailList" class="divide-y divide-slate-100 dark:divide-slate-800">
+          <!-- Loaded via JS -->
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="w-full border-t border-slate-200/80 dark:border-slate-800/80 bg-white/50 dark:bg-slate-900/50 py-8 transition-colors mt-auto">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500 dark:text-slate-400">
+      <div class="flex items-center gap-2">
+        <i class="ti ti-shield text-blue-600 dark:text-blue-400 text-base"></i>
+        <span>© 2026 TempMail. Disposable temporary email protection.</span>
+      </div>
+      <div class="flex items-center gap-4">
+        <button onclick="openHistoryModal()" class="hover:text-slate-900 dark:hover:text-white transition-colors">History</button>
+        <button onclick="openSettingsModal()" class="hover:text-slate-900 dark:hover:text-white transition-colors">FAQ & Preferences</button>
+        <span class="text-slate-300 dark:text-slate-700">·</span>
+        <span>No logs retained</span>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Email Reader Modal -->
+  <div id="emailModal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-900/60 backdrop-blur-xs">
+    <div class="w-full max-w-3xl max-h-[92vh] flex flex-col rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-2xl overflow-hidden">
+      <div class="flex items-center justify-between px-5 py-4 border-b border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50">
+        <button onclick="closeEmailModal()" class="flex items-center gap-1.5 text-xs font-semibold text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white px-2.5 py-1.5 rounded-lg border border-slate-200 dark:border-slate-800 hover:bg-white dark:hover:bg-slate-800 transition-colors">
+          <i class="ti ti-arrow-left"></i>
+          <span>Back to Inbox</span>
+        </button>
+        <button onclick="closeEmailModal()" class="p-1.5 rounded-lg text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800">
+          <i class="ti ti-x text-lg"></i>
+        </button>
+      </div>
+
+      <div class="flex-1 overflow-y-auto p-5 sm:p-6 space-y-4">
+        <div id="otpBanner" class="hidden flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 p-4 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/80">
+          <div class="flex items-center gap-3">
+            <div class="w-9 h-9 rounded-lg bg-emerald-600 text-white flex items-center justify-center shrink-0">
+              <i class="ti ti-key text-lg"></i>
+            </div>
+            <div>
+              <div class="text-xs font-semibold text-emerald-800 dark:text-emerald-300 uppercase tracking-wider">Verification Code</div>
+              <div id="otpCodeDisplay" class="font-mono text-xl sm:text-2xl font-extrabold text-emerald-900 dark:text-emerald-100 tracking-wider"></div>
+            </div>
+          </div>
+          <button onclick="copyOtpFromModal()" class="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold transition-all">
+            <i class="ti ti-copy"></i>
+            <span id="modalOtpBtnText">Copy Code</span>
+          </button>
+        </div>
+
+        <div class="pb-4 border-b border-slate-100 dark:border-slate-800 space-y-2">
+          <h2 id="modalSubject" class="text-lg sm:text-xl font-bold text-slate-900 dark:text-white leading-snug"></h2>
+          <div class="flex flex-wrap items-center justify-between text-xs text-slate-500 dark:text-slate-400 gap-2">
+            <div class="flex items-center gap-2">
+              <span id="modalSender" class="font-semibold text-slate-700 dark:text-slate-200"></span>
+            </div>
+            <div id="modalDate" class="text-slate-400"></div>
+          </div>
+        </div>
+
+        <div class="rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden bg-white min-h-[300px]">
+          <iframe id="emailIframe" class="w-full h-[450px] border-none bg-white"></iframe>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Custom Prefix Modal -->
+  <div id="customModal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs">
+    <div class="w-full max-w-md rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-2xl p-6">
+      <div class="flex items-center justify-between pb-4 border-b border-slate-100 dark:border-slate-800">
+        <h3 class="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
+          <i class="ti ti-sparkles text-blue-600 dark:text-blue-400"></i>
+          <span>Customize Email</span>
+        </h3>
+        <button onclick="closeCustomModal()" class="p-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
+          <i class="ti ti-x text-lg"></i>
+        </button>
+      </div>
+      <div class="mt-4 space-y-4">
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 dark:text-slate-300 mb-1.5">Username Handle</label>
+          <input type="text" id="customHandleInput" placeholder="e.g. testing.user" class="w-full px-3 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-sm font-mono text-slate-900 dark:text-white outline-none focus:border-blue-500" />
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 dark:text-slate-300 mb-1.5">Domain</label>
+          <select id="customDomainSelect" class="w-full px-3 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-sm font-mono text-slate-900 dark:text-white outline-none focus:border-blue-500">
+            <option value="1secmail.com">@1secmail.com</option>
+            <option value="1secmail.org">@1secmail.org</option>
+            <option value="1secmail.net">@1secmail.net</option>
+            <option value="kzcvv.com">@kzcvv.com</option>
+            <option value="qiott.com">@qiott.com</option>
+            <option value="wuuvo.com">@wuuvo.com</option>
+          </select>
+        </div>
+        <div class="flex gap-2 pt-2">
+          <button onclick="closeCustomModal()" class="flex-1 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800">Cancel</button>
+          <button onclick="submitCustomMailbox()" class="flex-1 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold shadow-sm">Save Mailbox</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- History Modal -->
+  <div id="historyModal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs">
+    <div class="w-full max-w-lg rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-2xl flex flex-col max-h-[85vh]">
+      <div class="flex items-center justify-between px-5 py-4 border-b border-slate-100 dark:border-slate-800">
+        <h3 class="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
+          <i class="ti ti-history text-blue-600"></i>
+          <span>Mailbox History</span>
+        </h3>
+        <div class="flex items-center gap-2">
+          <button onclick="clearHistory()" class="text-xs text-red-500 hover:underline">Clear All</button>
+          <button onclick="closeHistoryModal()" class="p-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
+            <i class="ti ti-x text-lg"></i>
+          </button>
+        </div>
+      </div>
+      <div id="historyList" class="flex-1 overflow-y-auto p-4 space-y-2.5"></div>
+    </div>
+  </div>
+
+  <!-- Settings & FAQ Modal -->
+  <div id="settingsModal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs">
+    <div class="w-full max-w-2xl rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-2xl max-h-[88vh] flex flex-col">
+      <div class="flex items-center justify-between px-6 py-4 border-b border-slate-100 dark:border-slate-800">
+        <h3 class="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
+          <i class="ti ti-help text-blue-600"></i>
+          <span>Settings & FAQ</span>
+        </h3>
+        <button onclick="closeSettingsModal()" class="p-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
+          <i class="ti ti-x text-lg"></i>
+        </button>
+      </div>
+      <div class="flex-1 overflow-y-auto p-6 space-y-6">
+        <div>
+          <h4 class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-3">Preferences</h4>
+          <div class="p-3.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/40 flex items-center justify-between">
+            <div class="flex items-center gap-2.5">
+              <i class="ti ti-moon text-blue-500 text-lg"></i>
+              <div>
+                <div class="text-xs font-semibold text-slate-800 dark:text-slate-200">Color Theme</div>
+                <div class="text-[11px] text-slate-400">Toggle dark and light interface</div>
+              </div>
+            </div>
+            <button onclick="toggleDarkMode()" class="px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 text-xs font-medium">Switch Theme</button>
+          </div>
+        </div>
+
+        <div>
+          <h4 class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-3">FAQ</h4>
+          <div class="space-y-2">
+            <div class="rounded-xl border border-slate-200 dark:border-slate-800 p-3.5 bg-slate-50/30 dark:bg-slate-950/30">
+              <div class="text-xs font-bold text-slate-800 dark:text-slate-200">Is TempMail 100% free?</div>
+              <div class="text-xs text-slate-500 dark:text-slate-400 mt-1">Yes, completely free with no registration, credit card, or hidden fees.</div>
+            </div>
+            <div class="rounded-xl border border-slate-200 dark:border-slate-800 p-3.5 bg-slate-50/30 dark:bg-slate-950/30">
+              <div class="text-xs font-bold text-slate-800 dark:text-slate-200">Can I retrieve past emails?</div>
+              <div class="text-xs text-slate-500 dark:text-slate-400 mt-1">Yes, previous mailboxes are saved in the History menu for quick 1-click switching.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification -->
+  <div id="toast" class="fixed bottom-5 right-5 z-50 transform translate-y-20 opacity-0 transition-all duration-300 pointer-events-none px-4">
+    <div class="flex items-center gap-2.5 px-4 py-3 rounded-xl bg-slate-900 text-white shadow-xl text-xs font-medium">
+      <i class="ti ti-info-circle text-blue-400 text-base"></i>
+      <span id="toastMsg"></span>
+    </div>
+  </div>
+
+  <script>
+    let currentAccount = '';
+    let currentLogin = '';
+    let currentDomain = localStorage.getItem('templi_selected_domain') || 'guerrillamailblock.com';
+    let currentSidToken = null;
+    let currentAlias = null;
+    let checkInterval = null;
+    let autoRefreshSec = 10;
+    let countdown = 10;
+    let autoRefreshActive = true;
+    let currentOtp = null;
+
+    // Dark mode
+    function initTheme() {
+      const saved = localStorage.getItem('templi_theme');
+      const isDark = saved ? saved === 'dark' : window.matchMedia('(prefers-color-scheme: dark)').matches;
+      if (isDark) {
+        document.documentElement.classList.add('dark');
+        document.getElementById('themeIcon').className = 'ti ti-sun text-lg text-amber-400';
+      } else {
+        document.documentElement.classList.remove('dark');
+        document.getElementById('themeIcon').className = 'ti ti-moon text-lg';
+      }
+    }
+    function toggleDarkMode() {
+      const isDark = document.documentElement.classList.toggle('dark');
+      localStorage.setItem('templi_theme', isDark ? 'dark' : 'light');
+      document.getElementById('themeIcon').className = isDark ? 'ti ti-sun text-lg text-amber-400' : 'ti ti-moon text-lg';
+      showToast(isDark ? 'Dark mode enabled' : 'Light mode enabled');
+    }
+    initTheme();
+
+    function showToast(msg) {
+      const toast = document.getElementById('toast');
+      document.getElementById('toastMsg').innerText = msg;
+      toast.classList.remove('translate-y-20', 'opacity-0');
+      setTimeout(() => toast.classList.add('translate-y-20', 'opacity-0'), 3000);
+    }
+
+    function scrollToInbox() {
+      document.getElementById('inboxSection').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    async function gmCall(func, params = {}, skipToken = false) {
+      const q = new URLSearchParams();
+      q.set('f', func);
+      if (currentSidToken && !skipToken) q.set('sid_token', currentSidToken);
+      for (const [k, v] of Object.entries(params)) {
+        if (k === 'site') continue; // Never pass site param to Guerrilla Mail
+        if (v !== undefined && v !== null) {
+          if (Array.isArray(v)) v.forEach(x => q.append(`${k}[]`, x));
+          else q.set(k, String(v));
+        }
+      }
+      try {
+        const res = await fetch(`/api/guerrilla?${q.toString()}`);
+        if (res.ok) {
+          const t = await res.text();
+          return JSON.parse(t);
+        }
+      } catch (e) {}
+
+      // Direct fallback
+      const direct = await fetch(`https://api.guerrillamail.com/ajax.php?${q.toString()}`);
+      const txt = await direct.text();
+      return JSON.parse(txt);
+    }
+
+    const GUERRILLA_DOMAINS = [
+      'guerrillamailblock.com',
+      'guerrillamail.com',
+      'sharklasers.com',
+      'guerrillamail.net',
+      'guerrillamail.org',
+      'pokemail.net',
+      'spam4.me',
+      'grr.la'
+    ];
+
+    function toggleDomainMenu() {
+      const menu = document.getElementById('domainMenu');
+      menu.classList.toggle('hidden');
+      renderDomainOptions();
+    }
+
+    function renderDomainOptions() {
+      const container = document.getElementById('domainOptions');
+      container.innerHTML = GUERRILLA_DOMAINS.map(d => `
+        <button onclick="selectDomain('${d}')" class="w-full text-left px-2.5 py-1.5 text-xs rounded-lg font-mono transition-colors flex items-center justify-between cursor-pointer ${
+          currentDomain === d ? 'bg-blue-50 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400 font-semibold' : 'text-slate-700 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-700'
+        }">
+          <span>@${d}</span>
+          ${currentDomain === d ? '<i class="ti ti-check"></i>' : ''}
+        </button>
+      `).join('');
+    }
+
+    function selectDomain(d) {
+      currentDomain = d;
+      localStorage.setItem('templi_selected_domain', d);
+      document.getElementById('domainMenu').classList.add('hidden');
+      document.getElementById('activeDomainLabel').innerText = '@' + d;
+      if (currentLogin) {
+        currentAccount = `${currentLogin}@${d}`;
+        document.getElementById('emailDisplay').value = currentAccount;
+        saveToHistory(currentAccount);
+        showToast('Domain switched to @' + d);
+      }
+    }
+
+    const FIRST_NAMES = ['james', 'olivia', 'liam', 'emma', 'noah', 'amelia', 'oliver', 'sophia', 'lucas', 'charlotte', 'alexander', 'isabella', 'benjamin', 'mia', 'henry', 'evelyn', 'william', 'harper', 'elijah', 'daniel', 'matthew', 'abigail', 'jackson', 'david', 'carter', 'sofia', 'wyatt', 'emily', 'john', 'owen', 'dylan', 'luke', 'gabriel', 'anthony', 'isaac', 'chloe', 'julian', 'grace', 'joshua', 'andrew', 'samuel', 'nathan', 'ryan', 'audrey', 'adrian', 'miles', 'eli', 'claire', 'nolan', 'lucy', 'aaron', 'cameron', 'ezra', 'thomas', 'connor', 'caroline', 'landon', 'emilia', 'asher', 'leo', 'maya', 'hunter', 'austin', 'ian', 'sarah', 'adam', 'jordan', 'cooper', 'alice', 'roman', 'axel', 'ruby', 'angel', 'eva', 'tyler', 'hailey', 'kevin', 'jason', 'parker', 'victor', 'rose', 'felix', 'daisy', 'colin', 'genevieve', 'patrick', 'faith', 'kyle', 'sean', 'amber', 'derek', 'spencer'];
+    const LAST_NAMES = ['smith', 'johnson', 'williams', 'brown', 'jones', 'garcia', 'miller', 'davis', 'rodriguez', 'martinez', 'hernandez', 'lopez', 'gonzalez', 'wilson', 'anderson', 'thomas', 'taylor', 'moore', 'jackson', 'martin', 'lee', 'perez', 'thompson', 'white', 'harris', 'sanchez', 'clark', 'ramirez', 'lewis', 'robinson', 'walker', 'young', 'allen', 'king', 'wright', 'scott', 'torres', 'nguyen', 'hill', 'flores', 'green', 'adams', 'nelson', 'baker', 'hall', 'rivera', 'campbell', 'mitchell', 'carter', 'roberts', 'gomez', 'phillips', 'evans', 'turner', 'diaz', 'parker', 'cruz', 'edwards', 'collins', 'reyes', 'stewart', 'morris', 'morales', 'murphy', 'cook', 'rogers', 'gutierrez', 'ortiz', 'morgan', 'cooper', 'peterson', 'bailey', 'reed', 'kelly', 'howard', 'ramos', 'kim', 'cox', 'ward', 'richardson', 'watson', 'brooks', 'wood', 'james', 'bennett', 'gray', 'hughes', 'price', 'alvarez', 'castillo', 'sanders', 'patel', 'myers', 'long', 'ross', 'foster', 'jimenez', 'powell', 'jenkins', 'perry', 'russell', 'sullivan', 'bell', 'coleman', 'butler', 'henderson', 'barnes', 'fisher', 'simmons', 'jordan', 'patterson', 'alexander', 'hamilton', 'graham', 'reynolds', 'griffin', 'wallace', 'moreno', 'west', 'cole', 'hayes', 'bryant', 'gibson', 'ellis', 'tran', 'medina', 'aguilar', 'stevens', 'murray', 'ford', 'castro', 'marshall', 'owens', 'harrison', 'fernandez', 'mcdonald', 'woods'];
+
+    function generateRealisticHumanName() {
+      const first = FIRST_NAMES[Math.floor(Math.random() * FIRST_NAMES.length)];
+      const last = LAST_NAMES[Math.floor(Math.random() * LAST_NAMES.length)];
+      const num2 = Math.floor(Math.random() * 90 + 10);
+      const style = Math.floor(Math.random() * 7);
+      switch(style) {
+        case 0: return `${first}.${last}`;
+        case 1: return `${first}.${last}${num2}`;
+        case 2: return `${first}_${last}`;
+        case 3: return `${first}${last}${Math.floor(Math.random() * 9 + 1)}`;
+        case 4: return `${first}.${last.charAt(0)}${num2}`;
+        case 5: return `${first}-${last}`;
+        case 6: default: return `${first}.${last}.${num2}`;
+      }
+    }
+
+    async function generateEmail(customLogin = null, customDom = null) {
+      document.getElementById('genSpinner').classList.add('animate-spin');
+      document.getElementById('emailDisplay').value = 'Generating human name address...';
+      const targetDomain = customDom || currentDomain || 'guerrillamailblock.com';
+      const chosenLogin = customLogin ? customLogin.toLowerCase().replace(/[^a-z0-9._-]/g, '') : generateRealisticHumanName();
+      try {
+        const data = await gmCall('set_email_user', {
+          email_user: chosenLogin,
+        }, !customLogin); // Skip token on random generation to get fresh inbox
+
+        if (data && (data.email_addr || data.auth?.success || data.sid_token)) {
+          currentSidToken = data.sid_token || null;
+          currentAlias = data.alias || null;
+          const userPart = data.email_addr ? data.email_addr.split('@')[0] : chosenLogin;
+          currentLogin = userPart;
+          currentDomain = targetDomain;
+          currentAccount = `${currentLogin}@${currentDomain}`;
+          document.getElementById('emailDisplay').value = currentAccount;
+          document.getElementById('activeDomainLabel').innerText = '@' + currentDomain;
+          saveToHistory(currentAccount);
+          checkMessages(true);
+          showToast('New human email: ' + currentAccount);
+        } else {
+          throw new Error('Invalid response');
+        }
+      } catch (err) {
+        const fallbackUser = chosenLogin || generateRealisticHumanName();
+        currentLogin = fallbackUser;
+        currentDomain = targetDomain;
+        currentAccount = `${currentLogin}@${currentDomain}`;
+        document.getElementById('emailDisplay').value = currentAccount;
+        document.getElementById('activeDomainLabel').innerText = '@' + currentDomain;
+        saveToHistory(currentAccount);
+        checkMessages(true);
+        showToast('New human email: ' + currentAccount);
+      } finally {
+        document.getElementById('genSpinner').classList.remove('animate-spin');
+      }
+    }
+
+    function copyAddress() {
+      if (!currentAccount) return;
+      navigator.clipboard.writeText(currentAccount);
+      document.getElementById('copyBtnText').innerText = 'Copied!';
+      showToast('Address copied to clipboard!');
+      setTimeout(() => document.getElementById('copyBtnText').innerText = 'Copy', 2000);
+    }
+
+    function shareLink() {
+      if (!currentAccount) return;
+      const url = window.location.origin + window.location.pathname + '#mail=' + encodeURIComponent(currentAccount);
+      navigator.clipboard.writeText(url);
+      showToast('Share link copied!');
+    }
+
+    async function checkMessages(isManual = false) {
+      if (!currentAccount) return;
+      if (isManual) {
+        document.getElementById('refreshIcon').classList.add('animate-spin');
+        document.getElementById('checkingIndicator').classList.remove('hidden');
+      }
+      try {
+        const data = await gmCall('check_email', { seq: 0 });
+        if (data && Array.isArray(data.list)) {
+          renderMessages(data.list);
+        }
+      } catch (e) {
+        console.error(e);
+      } finally {
+        if (isManual) {
+          document.getElementById('refreshIcon').classList.remove('animate-spin');
+          document.getElementById('checkingIndicator').classList.add('hidden');
+        }
+      }
+    }
+
+    function extractOtp(str) {
+      if (!str) return null;
+      const match = str.match(/\b([0-9]{4,8})\b/);
+      return match ? match[1] : null;
+    }
+
+    function renderMessages(list) {
+      const container = document.getElementById('emailList');
+      document.getElementById('inboxCount').innerText = list.length;
+      if (!list || list.length === 0) {
+        container.innerHTML = `
+          <div class="py-16 px-4 text-center flex flex-col items-center justify-center">
+            <div class="w-12 h-12 rounded-xl bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 flex items-center justify-center mb-3">
+              <i class="ti ti-inbox text-2xl"></i>
+            </div>
+            <h3 class="text-sm font-bold text-slate-900 dark:text-white">Your inbox is waiting</h3>
+            <p class="mt-1 text-xs text-slate-500 dark:text-slate-400">Incoming emails from Guerrilla Mail appear here automatically.</p>
+          </div>`;
+        return;
+      }
+      container.innerHTML = '';
+      list.forEach((msg) => {
+        const otp = extractOtp(msg.mail_subject + ' ' + (msg.mail_excerpt || ''));
+        const item = document.createElement('div');
+        item.className = 'group relative flex flex-col sm:flex-row sm:items-center justify-between p-4 hover:bg-slate-50 dark:hover:bg-slate-800/60 cursor-pointer transition-colors gap-3';
+        item.onclick = () => viewMessage(msg.mail_id, msg.mail_subject, msg.mail_from, msg.mail_date);
+        item.innerHTML = `
+          <div class="flex items-center gap-3.5 min-w-0 flex-1">
+            <div class="shrink-0 w-10 h-10 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex items-center justify-center font-bold text-xs">
+              ${(msg.mail_from || 'GM').substring(0, 2).toUpperCase()}
+            </div>
+            <div class="min-w-0 flex-1">
+              <div class="text-xs text-slate-500 dark:text-slate-400 truncate">${msg.mail_from}</div>
+              <h4 class="text-sm font-semibold text-slate-900 dark:text-white truncate">${msg.mail_subject || '(No Subject)'}</h4>
+            </div>
+          </div>
+          <div class="flex items-center gap-3 shrink-0">
+            ${otp ? `<button onclick="event.stopPropagation(); copyOtpText('${otp}')" class="px-2.5 py-1 rounded-lg bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800 text-emerald-700 dark:text-emerald-300 text-xs font-mono font-bold flex items-center gap-1"><i class="ti ti-key"></i> ${otp}</button>` : ''}
+            <span class="text-xs text-slate-400">${msg.mail_date || ''}</span>
+            <button onclick="event.stopPropagation(); deleteMessage('${msg.mail_id}')" class="p-1 text-slate-400 hover:text-red-500"><i class="ti ti-trash"></i></button>
+            <i class="ti ti-chevron-right text-slate-300 dark:text-slate-600"></i>
+          </div>
+        `;
+        container.appendChild(item);
+      });
+    }
+
+    async function viewMessage(id, subject, sender, date) {
+      document.getElementById('emailModal').classList.remove('hidden');
+      document.getElementById('modalSubject').innerText = subject;
+      document.getElementById('modalSender').innerText = sender;
+      document.getElementById('modalDate').innerText = date;
+      const otp = extractOtp(subject);
+      currentOtp = otp;
+      if (otp) {
+        document.getElementById('otpBanner').classList.remove('hidden');
+        document.getElementById('otpCodeDisplay').innerText = otp;
+      } else {
+        document.getElementById('otpBanner').classList.add('hidden');
+      }
+      try {
+        const data = await gmCall('fetch_email', { email_id: id });
+        const iframe = document.getElementById('emailIframe');
+        const doc = iframe.contentDocument;
+        doc.open();
+        const bodyContent = data.mail_body || 'Empty message content.';
+        const isHtml = /<[a-z][\s\S]*>/i.test(bodyContent);
+        doc.write(isHtml ? bodyContent : `<pre style="font-family:sans-serif;padding:16px;white-space:pre-wrap;">${bodyContent}</pre>`);
+        doc.close();
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    async function deleteMessage(id) {
+      await gmCall('del_email', { 'email_ids[]': [id] });
+      checkMessages(true);
+      showToast('Email deleted');
+    }
+
+    function closeEmailModal() {
+      document.getElementById('emailModal').classList.add('hidden');
+    }
+
+    function copyOtpText(code) {
+      navigator.clipboard.writeText(code);
+      showToast(`Verification code ${code} copied!`);
+    }
+
+    function copyOtpFromModal() {
+      if (currentOtp) copyOtpText(currentOtp);
+    }
+
+    function toggleAutoRefresh() {
+      autoRefreshActive = !autoRefreshActive;
+      const btn = document.getElementById('autoRefreshBtn');
+      if (autoRefreshActive) {
+        btn.className = 'flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border text-xs font-medium border-emerald-200 dark:border-emerald-900/60 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 transition-colors';
+      } else {
+        btn.className = 'flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border text-xs font-medium border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-500 transition-colors';
+        document.getElementById('autoRefreshText').innerText = 'Auto: Off';
+      }
+    }
+
+    setInterval(() => {
+      if (!autoRefreshActive) return;
+      countdown--;
+      if (countdown <= 0) {
+        checkMessages();
+        countdown = autoRefreshSec;
+      }
+      document.getElementById('autoRefreshText').innerText = `Auto: ${countdown}s`;
+    }, 1000);
+
+    // History Modal
+    function saveToHistory(addr) {
+      let h = JSON.parse(localStorage.getItem('templi_history') || '[]');
+      h = h.filter(x => x.address !== addr);
+      h.unshift({ address: addr, sidToken: currentSidToken, createdAt: Date.now() });
+      if (h.length > 20) h.pop();
+      localStorage.setItem('templi_history', JSON.stringify(h));
+      updateHistoryCount();
+    }
+    function updateHistoryCount() {
+      const h = JSON.parse(localStorage.getItem('templi_history') || '[]');
+      const badge = document.getElementById('historyBadge');
+      if (h.length > 0) {
+        badge.classList.remove('hidden');
+        badge.innerText = h.length;
+      } else {
+        badge.classList.add('hidden');
+      }
+    }
+    function openHistoryModal() {
+      document.getElementById('historyModal').classList.remove('hidden');
+      const container = document.getElementById('historyList');
+      const h = JSON.parse(localStorage.getItem('templi_history') || '[]');
+      if (h.length === 0) {
+        container.innerHTML = '<div class="py-8 text-center text-xs text-slate-400">No saved mailboxes yet.</div>';
+        return;
+      }
+      container.innerHTML = h.map(item => `
+        <div class="p-3 rounded-xl border border-slate-200 dark:border-slate-800 flex items-center justify-between">
+          <div class="font-mono text-xs font-semibold truncate">${item.address}</div>
+          <button onclick="switchMailbox('${item.address}', '${item.sidToken || ''}')" class="px-2.5 py-1 bg-blue-600 text-white rounded-lg text-xs font-medium">Switch</button>
+        </div>
+      `).join('');
+    }
+    function switchMailbox(addr, sid) {
+      if (sid) currentSidToken = sid;
+      const parts = addr.split('@');
+      generateEmail(parts[0], parts[1]);
+      closeHistoryModal();
+    }
+    function closeHistoryModal() {
+      document.getElementById('historyModal').classList.add('hidden');
+    }
+    function clearHistory() {
+      localStorage.removeItem('templi_history');
+      openHistoryModal();
+      updateHistoryCount();
+      showToast('History cleared');
+    }
+
+    // Custom Modal
+    function openCustomModal() {
+      document.getElementById('customModal').classList.remove('hidden');
+      document.getElementById('customHandleInput').value = currentLogin;
+    }
+    function closeCustomModal() {
+      document.getElementById('customModal').classList.add('hidden');
+    }
+    function submitCustomMailbox() {
+      const handle = document.getElementById('customHandleInput').value.trim();
+      const dom = document.getElementById('customDomainSelect').value;
+      if (handle.length < 2) {
+        showToast('Username must be at least 2 characters');
+        return;
+      }
+      generateEmail(handle, dom);
+      closeCustomModal();
+    }
+
+    // Settings Modal
+    function openSettingsModal() {
+      document.getElementById('settingsModal').classList.remove('hidden');
+    }
+    function closeSettingsModal() {
+      document.getElementById('settingsModal').classList.add('hidden');
+    }
+
+    // Init
+    window.addEventListener('DOMContentLoaded', () => {
+      updateHistoryCount();
+      if (window.location.hash.startsWith('#mail=')) {
+        const addr = decodeURIComponent(window.location.hash.replace('#mail=', ''));
+        const parts = addr.split('@');
+        generateEmail(parts[0], parts[1]);
+      } else {
+        generateEmail();
+      }
+    });
+  </script>
+</body>
+</html>

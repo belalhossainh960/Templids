@@ -1,0 +1,7 @@
+{
+  "name": "Templi - Modern Temporary Email",
+  "description": "Fast, secure, and disposable email generator with real-time inbox, auto-refresh, smart OTP detection, and dark mode support.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
+
